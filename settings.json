@@ -1,0 +1,18 @@
+{
+    "bot-name": "app/todo",
+    "min-stars": -1,
+    "min-forks": -1,
+    "min-watchers": -1,
+    "ignore-forks": false,
+    "ignore-private-repos": true,
+    "ignore-archived-repos": false,
+    "type": "issue",
+    "state": "any",
+    "download-repos": false,
+    "download-max-size": -1,
+    "download-output-path": "",
+    "language": "any",
+    "start-date": "1970-01-01",
+    "end-date": "2021-01-01",
+    "additional-issue-query": ""
+}
