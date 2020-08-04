@@ -1,0 +1,4 @@
+{
+    "base_url": "https://<HOSTNAME>/api/v3",
+    "login_or_token": "<ACCESS_TOKEN>"
+}

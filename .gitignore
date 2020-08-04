@@ -126,3 +126,6 @@ dmypy.json
 
 # IDE settings
 .vscode/
+
+# Login Information
+/login.json
