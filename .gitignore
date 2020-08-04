@@ -129,3 +129,6 @@ dmypy.json
 
 # Login Information
 /login.json
+
+# Outputs
+/output
