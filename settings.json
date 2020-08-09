@@ -17,5 +17,7 @@
     "start-date": "2017-09-01",
     "end-date": "2021-01-01",
     "additional-issue-query": "",
-    "max-results": -1
+    "max-results": -1,
+    "log-pygithub-requests": false,
+    "log-pygithub-requests-shorten": true
 }

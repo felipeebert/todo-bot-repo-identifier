@@ -15,10 +15,18 @@ def rate_limited_retry_search(github):
                     return func(*args, **kwargs)
                 except RateLimitExceededException:
                     limits = github.get_rate_limit()
-                    reset = limits.search.reset.replace(tzinfo=timezone.utc)
+                    search_reset = limits.search.reset.replace(tzinfo=timezone.utc)
+                    core_reset = limits.core.reset.replace(tzinfo=timezone.utc)
+
+                    reset_time = search_reset
+                    if limits.core.remaining <= 0:
+                        reset_time = core_reset
+                        if limits.search.remaining <= 0:
+                            reset_time = max(search_reset, core_reset)
+
                     now = datetime.now(timezone.utc)
-                    seconds = (reset - now).total_seconds()
-                    print(f"> GitHub Search Rate limit exceeded")
+                    seconds = (reset_time - now).total_seconds()
+                    print(f"> GitHub Search and/or Core Rate limit exceeded")
                     print(f"> Reset is in {seconds:.3g} seconds.")
                     if seconds > 0.0:
                         print(f"> Waiting for {seconds:.3g} seconds...")

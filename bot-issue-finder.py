@@ -1,15 +1,30 @@
 import csv
 import json
+import logging
 
 from datetime import datetime, timedelta
-from github import Github
+from github import Github, enable_console_debug_logging
+from github.GithubObject import _NotSetType as NotSet
 from math import inf
 from rate_limit_retry import rate_limited_retry_search
+
+
+# Prints PyGithub API requests in a shorter form
+class ShortRequestPrinter(logging.Filter):
+    def filter(self, record):
+        short_msg = ' '.join(record.getMessage().split()[:2])
+        if '/rate_limit' not in short_msg:
+            print(f"*** API REQUEST: {short_msg}")
+        return False
+
 
 # Maximum number of entries that GitHub returns per search
 # If we obtain more results than this value, our search space is too large
 # and we need to narrow down. (GitHub only returns 1000 results per search)
 MAX_RESULTS_PER_SEARCH = 1000
+
+# Standard GitHub API endpoint
+STANDARD_API_ENDPOINT = "https://api.github.com"
 
 # Some settings only allow specific values
 SETTING_ALLOWED_VALUES = {
@@ -23,9 +38,9 @@ SETTING_TO_QUALIFIER = {
         "bot-name":                 lambda x: f"author:{x} ",
         "ignore-private-repos":     lambda x: "is:public " if x else "",
         "ignore-archived-repos":    lambda x: "archived:false " if x else "",
-        "type":                     lambda x: f"type:{x} " if x != "any" else "",
-        "state":                    lambda x: f"state:{x} " if x != "any" else "",
-        "language":                 lambda x: f"language:{x} " if x != "any" else "",
+        "type":                     lambda x: f"type:{x} " if x not in ["any", None] else "",
+        "state":                    lambda x: f"state:{x} " if x not in ["any", None] else "",
+        "language":                 lambda x: f"language:{x} " if x not in ["any", None] else "",
         "additional-issue-query":   lambda x: f"{x} " if x != "" else ""
     },
     'repo_level': {
@@ -60,12 +75,39 @@ def construct_issue_search_query(settings, setting_to_qualifier):
     return issue_query
 
 
+def is_issue(issue_or_pr):
+    # PyGithub makes an API request if attempting to obtain PR-data of an issue with the pull_request-field
+    # However, this is the only way to find out whether something is an issue or PR! yikes...
+    #
+    # If the data for the pull_request attribute is not set, we know it must be an issue (as otherwise we'd have 
+    # obtained the relevant PR-data for free in our earlier request!)
+    if isinstance(issue_or_pr._pull_request, NotSet):
+        return True
+
+    # If the data is set, then we can just find out what it is
+    return issue_or_pr.pull_request is not None
+
 if __name__ == "__main__":
     print("======SETTINGS======")
-
     settings = load_settings('settings.json')
     verify_settings_values(SETTING_ALLOWED_VALUES)
     issue_query = construct_issue_search_query(settings, SETTING_TO_QUALIFIER)
+
+    # Log-settings
+    if settings.get('log-pygithub-requests'):
+        if settings.get('log-pygithub-requests-shorten'):
+            print('Simple PyGithub logging enabled')
+            handler = logging.StreamHandler()
+            handler.addFilter(ShortRequestPrinter())
+
+            logger = logging.getLogger("github")
+            logger.setLevel(logging.DEBUG)
+            logger.addHandler(handler)
+        else:
+            print("Extended PyGithub logging enabled")
+            enable_console_debug_logging()
+    else:
+        print("PyGithub logging disabled")
 
     # Load GitHub Login information
     login_settings = load_settings('login.json')
@@ -76,22 +118,23 @@ if __name__ == "__main__":
         print(f"Logged in as {token_or_username}")
     elif not token_or_username:
         # No user was logged in
-        print("No login was made; all reqests will be anonymous (NB: Less requests can be made per minute)")
+        print("No login was made; all reqests will be anonymous (NB: Less requests can be made per minute as an anonymous user!)")
     else:
         # Token login
         print("Logged in using an access token")
 
     base_url = login_settings.get("base_url")
-    if base_url is not None and base_url != "https://api.github.com":
+    if base_url is not None and base_url != STANDARD_API_ENDPOINT:
         print(f"Using Github Enterprise with custom hostname: {base_url}")
     else:
-        print("Using the standard API endpoint at https://api.github.com")
+        print(f"Using the standard API endpoint at {STANDARD_API_ENDPOINT}")
+
+    # Initialize PyGithub
+    github = Github(per_page=100, **login_settings)
     
     print(f"You provided the following query: {issue_query}")
     print("====================\n")
 
-    # Initialize PyGithub
-    github = Github(per_page=100, **login_settings)
 
     max_results = settings.get("max-results")
     num_results_so_far = 0
@@ -106,9 +149,10 @@ if __name__ == "__main__":
     @rate_limited_retry_search(github)
     def process_search_results(search_results, csv_writer, max_results_to_process):
         for result in search_results[:max_results_to_process]:
-            csv_writer.writerow(["/".join(result.url.split("/")[-4:-2]), result.number, result.title, result.state, "issue",#"pr" if result.pull_request else "issue",
-                result.created_at, result.updated_at,
-                result.closed_at, result.comments, result.body])
+            csv_writer.writerow(["/".join(result.url.split("/")[-4:-2]), result.number, result.title, result.state,
+                    "issue" if is_issue(result) else "pr",
+                    result.created_at, result.updated_at,
+                    result.closed_at, result.comments, result.body])
 
     search_start_time = datetime.now()
     print(f"Search was started at {search_start_time}! \nNB: This might take a while, so grab a drink and relax!\n")
@@ -159,7 +203,7 @@ if __name__ == "__main__":
             current_end_date = final_end_date
     
     search_end_time = datetime.now()
-    print(f"\nSearch was ended at {search_end_time}, and took {search_end_time - search_start_time} hh/mm/ss!")
+    print(f"\nSearch was ended at {search_end_time}, and took {search_end_time - search_start_time} h:mm:ss!")
     print(f"Obtained {num_results_so_far} results, which were output in {output_filename}!")
     
     
