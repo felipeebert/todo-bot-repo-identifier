@@ -244,8 +244,8 @@ if __name__ == "__main__":
                         'is_private': repo.private,
                         'is_archived': repo.archived,
                         'estimated_size': repo.size,
-                        'created_at': repo.created_at,
-                        'updated_at': repo.updated_at,
+                        'created_at': repo.created_at.isoformat(),
+                        'updated_at': repo.updated_at.isoformat(),
                         'skipped': False,
                     }
                 else:
@@ -256,9 +256,9 @@ if __name__ == "__main__":
             if not repos[repo_name]['skipped']:
                 repos[repo_name]['issues'].append({'number': row['number'], 'created_at': row['created_at']})
 
-    output_filename = settings.get('results-output-file')
+    output_filename = settings.get('results-repo-output-file')
     with open(output_filename, 'w', newline='', encoding='utf-8') as output_file:
-        file.write(json.dumps(repos))
+        output_file.write(json.dumps(repos))
 
     repo_end_time = datetime.now()
     print(f"\nSearch was ended at {repo_end_time}, and took {repo_end_time - repo_end_time} h:mm:ss!")
