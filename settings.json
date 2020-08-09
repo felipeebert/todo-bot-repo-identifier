@@ -3,13 +3,13 @@
     "min-stars": -1,
     "min-forks": -1,
     "min-watchers": -1,
-    "min-contributors": -1,
     "ignore-forks": false,
     "ignore-private-repos": true,
     "ignore-archived-repos": false,
     "type": "issue",
     "state": "any",
-    "results-output-file": "output/results.csv",
+    "results-output-file": "output/issue-results.csv",
+    "results-repo-output-file": "output/repo-results.csv",
     "download-max-size-repo": -1,
     "download-output-path-repo": "output/repos",
     "download-output-path-comments": "output/comments",
@@ -18,6 +18,6 @@
     "end-date": "2021-01-01",
     "additional-issue-query": "",
     "max-results": -1,
-    "log-pygithub-requests": false,
+    "log-pygithub-requests": true,
     "log-pygithub-requests-shorten": true
 }

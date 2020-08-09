@@ -1,6 +1,7 @@
 import csv
 import json
 import logging
+import os
 
 from datetime import datetime, timedelta
 from github import Github, enable_console_debug_logging
@@ -43,9 +44,15 @@ SETTING_TO_QUALIFIER = {
         "language":                 lambda x: f"language:{x} " if x not in ["any", None] else "",
         "additional-issue-query":   lambda x: f"{x} " if x != "" else ""
     },
-    'repo_level': {
-        # TODO
-    }
+}
+
+SETTING_TO_VALID_PROPERTY = {
+    "min-stars":                lambda val, repo: val < 0 or repo.stargazers_count >= val,
+    "min-forks":                lambda val, repo: val < 0 or repo.forks_count >= val,
+    "min-watchers":             lambda val, repo: val < 0 or repo.watchers_count >= val,
+    "ignore-forks":             lambda val, repo: not val or not repo.fork,
+    "ignore-private-repos":     lambda val, repo: not val or not repo.private,
+    "ignore-archived-repos":    lambda val, repo: not val or not repo.archived,
 }
 
 def load_settings(filename):
@@ -74,6 +81,11 @@ def construct_issue_search_query(settings, setting_to_qualifier):
 
     return issue_query
 
+def repo_adheres_to_settings(repo, settings):
+    for setting, is_valid in SETTING_TO_VALID_PROPERTY.items():
+        if not is_valid(settings.get(setting), repo):
+            return False
+    return True
 
 def is_issue(issue_or_pr):
     # PyGithub makes an API request if attempting to obtain PR-data of an issue with the pull_request-field
@@ -135,12 +147,11 @@ if __name__ == "__main__":
     print(f"You provided the following query: {issue_query}")
     print("====================\n")
 
-
-    max_results = settings.get("max-results")
-    num_results_so_far = 0
-    if max_results < 0:
-        max_results = inf
-
+    @rate_limited_retry_search(github)
+    def run_repo_query(repo_name):
+        results = github.get_repo(repo_name)
+        return results
+    
     @rate_limited_retry_search(github)
     def run_search_query(query):
         results = github.search_issues(query)
@@ -154,56 +165,101 @@ if __name__ == "__main__":
                     result.created_at, result.updated_at,
                     result.closed_at, result.comments, result.body])
 
-    search_start_time = datetime.now()
-    print(f"Search was started at {search_start_time}! \nNB: This might take a while, so grab a drink and relax!\n")
+    if not os.path.isfile(settings.get('results-output-file')):
+        max_results = settings.get("max-results")
+        num_results_so_far = 0
+        if max_results < 0:
+            max_results = inf
+
+        search_start_time = datetime.now()
+        print(f"Search was started at {search_start_time}! \nNB: This might take a while, so grab a drink and relax!\n")
+
+        output_filename = settings.get('results-output-file')
+        with open(output_filename, 'w', newline='', encoding='utf-8') as output_file:
+            csv_writer = csv.writer(output_file, quoting=csv.QUOTE_MINIMAL, escapechar="\\")
+            csv_writer.writerow(["repo", "number", "title", "state", "type", "created_at", "updated_at",
+                    "closed_at", "num_comments", "body"])
+
+            current_start_date = datetime.fromisoformat(settings.get("start-date"))
+            final_end_date = datetime.fromisoformat(settings.get("end-date"))
+            current_end_date = final_end_date
+
+            # Ensure we obtain all repositories from the start to end time
+            while num_results_so_far < max_results:
+                # Repeatedly halve the search space if we obtain too many results
+                while True:
+                    date_qualifier = f"created:{current_start_date.isoformat()}..{current_end_date.isoformat()}"
+                    print(f"Searching for issues created between {current_start_date} and {current_end_date}")
+                    # print(f"Starting the search with the following query: {issue_query + date_qualifier}")
+
+                    lazy_results, num_results = run_search_query(issue_query + date_qualifier)
+                    
+                    if num_results < MAX_RESULTS_PER_SEARCH:
+                        max_results_to_process = min(num_results, max_results - num_results_so_far)
+                        print(f"> Query returned {num_results} search results! Processing {max_results_to_process} of them...")
+                        process_search_results(lazy_results, csv_writer, max_results_to_process)
+                        num_results_so_far += max_results_to_process
+                        break
+
+                    print("> Query returned too many search results... Halving search space...")
+                    
+                    new_end_date = current_start_date + (current_end_date - current_start_date)/2
+
+                    if new_end_date == current_end_date:
+                        print("> HELP; could not limit query further but there were still >1000 results! D:")
+                        exit(1)
+
+                    current_end_date = new_end_date
+                
+                if current_end_date == final_end_date:
+                    break
+
+                # Add 1 second as the created:<datetime>..<datetime> syntax is inclusive for both the start AND end date
+                # that's annoying...
+                current_start_date = current_end_date + timedelta(seconds=1)
+                current_end_date = final_end_date
+        
+        search_end_time = datetime.now()
+        print(f"\nSearch was ended at {search_end_time}, and took {search_end_time - search_start_time} h:mm:ss!")
+        print(f"Obtained {num_results_so_far} results, which were output in {output_filename}!")
+    
+    repo_start_time = datetime.now()
+    print(f"Repo Filtering was started at {repo_start_time}! \nNB: This might take an even longer while, so grab two drinks and relax twice as much!\n")
+
+    repos = {}
+    with open(settings.get('results-output-file'), newline='', encoding='utf-8') as issue_file:
+        csv_reader = csv.DictReader(issue_file)
+        for row in csv_reader:
+            repo_name = row['repo']
+            if repo_name not in repos:
+                repo = run_repo_query(repo_name)
+
+                if repo_adheres_to_settings(repo, settings):
+                    repos[repo_name] = {
+                        'issues': [],
+                        'stars': repo.stargazers_count,
+                        'forks': repo.forks_count,
+                        'watchers': repo.watchers_count,
+                        'is_fork': repo.fork,
+                        'is_private': repo.private,
+                        'is_archived': repo.archived,
+                        'estimated_size': repo.size,
+                        'created_at': repo.created_at,
+                        'updated_at': repo.updated_at,
+                        'skipped': False,
+                    }
+                else:
+                    repos[repo_name] = {
+                        'skipped': True,
+                    }
+
+            if not repos[repo_name]['skipped']:
+                repos[repo_name]['issues'].append({'number': row['number'], 'created_at': row['created_at']})
 
     output_filename = settings.get('results-output-file')
     with open(output_filename, 'w', newline='', encoding='utf-8') as output_file:
-        csv_writer = csv.writer(output_file, quoting=csv.QUOTE_MINIMAL, escapechar="\\")
-        csv_writer.writerow(["repo", "number", "title", "state", "type", "created_at", "updated_at",
-                "closed_at", "num_comments", "body"])
+        file.write(json.dumps(repos))
 
-        current_start_date = datetime.fromisoformat(settings.get("start-date"))
-        final_end_date = datetime.fromisoformat(settings.get("end-date"))
-        current_end_date = final_end_date
-
-        # Ensure we obtain all repositories from the start to end time
-        while num_results_so_far < max_results:
-            # Repeatedly halve the search space if we obtain too many results
-            while True:
-                date_qualifier = f"created:{current_start_date.isoformat()}..{current_end_date.isoformat()}"
-                print(f"Searching for issues created between {current_start_date} and {current_end_date}")
-                # print(f"Starting the search with the following query: {issue_query + date_qualifier}")
-
-                lazy_results, num_results = run_search_query(issue_query + date_qualifier)
-                
-                if num_results < MAX_RESULTS_PER_SEARCH:
-                    max_results_to_process = min(num_results, max_results - num_results_so_far)
-                    print(f"> Query returned {num_results} search results! Processing {max_results_to_process} of them...")
-                    process_search_results(lazy_results, csv_writer, max_results_to_process)
-                    num_results_so_far += max_results_to_process
-                    break
-
-                print("> Query returned too many search results... Halving search space...")
-                
-                new_end_date = current_start_date + (current_end_date - current_start_date)/2
-
-                if new_end_date == current_end_date:
-                    print("> HELP; could not limit query further but there were still >1000 results! D:")
-                    exit(1)
-
-                current_end_date = new_end_date
-            
-            if current_end_date == final_end_date:
-                break
-
-            # Add 1 second as the created:<datetime>..<datetime> syntax is inclusive for both the start AND end date
-            # that's annoying...
-            current_start_date = current_end_date + timedelta(seconds=1)
-            current_end_date = final_end_date
-    
-    search_end_time = datetime.now()
-    print(f"\nSearch was ended at {search_end_time}, and took {search_end_time - search_start_time} h:mm:ss!")
-    print(f"Obtained {num_results_so_far} results, which were output in {output_filename}!")
-    
-    
+    repo_end_time = datetime.now()
+    print(f"\nSearch was ended at {repo_end_time}, and took {repo_end_time - repo_end_time} h:mm:ss!")
+    print(f"Obtained {len(repos)} unique repositories, which were output in {output_filename}!")
