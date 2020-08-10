@@ -9,7 +9,7 @@
     "type": "issue",
     "state": "any",
     "results-output-file": "output/issue-results.csv",
-    "results-repo-output-file": "output/repo-results.csv",
+    "results-repo-output-file": "output/repo-results.json",
     "download-max-size-repo": -1,
     "download-output-path-repo": "output/repos",
     "download-output-path-comments": "output/comments",
