@@ -63,7 +63,7 @@ def load_settings(filename):
     assert settings, "Settings file could not be loaded!"
     return settings
 
-def verify_settings_values(setting_allowed_values):
+def verify_settings_values(settings, setting_allowed_values):
     # Ensure that all settings have valid values
     for setting, allowed_values in setting_allowed_values.items():
         if settings.get(setting) not in allowed_values:
@@ -102,7 +102,7 @@ def is_issue(issue_or_pr):
 if __name__ == "__main__":
     print("======SETTINGS======")
     settings = load_settings('settings.json')
-    verify_settings_values(SETTING_ALLOWED_VALUES)
+    verify_settings_values(settings, SETTING_ALLOWED_VALUES)
     issue_query = construct_issue_search_query(settings, SETTING_TO_QUALIFIER)
 
     # Log-settings
@@ -241,7 +241,7 @@ if __name__ == "__main__":
                                 'issues': [],
                                 'stars': repo.stargazers_count,
                                 'forks': repo.forks_count,
-                                'watchers': repo.watchers_count,
+                                'watchers': repo.subscribers_count,
                                 'is_fork': repo.fork,
                                 'is_private': repo.private,
                                 'is_archived': repo.archived,
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                             }
 
                 if not repos[repo_name]['skipped']:
-                    repos[repo_name]['issues'].append({'number': row['number'], 'created_at': row['created_at']})
+                    repos[repo_name]['issues'].append({'number': row['number'], 'created_at': row['created_at'], 'state': row['state']})
     except Exception as e:
         print(f"Unexpected Exception! {e}")
 
