@@ -28,6 +28,9 @@ def rate_limited_retry_search(github):
                     seconds = (reset_time - now).total_seconds()
                     print(f"> GitHub Search and/or Core Rate limit exceeded")
                     print(f"> Reset is in {seconds:.3g} seconds.")
+                    if seconds < 0:
+                        seconds = 1
+
                     if seconds > 0.0:
                         print(f"> Waiting for {seconds:.3g} seconds...")
                         time.sleep(seconds)

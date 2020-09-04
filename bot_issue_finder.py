@@ -4,7 +4,7 @@ import logging
 import os
 
 from datetime import datetime, timedelta
-from github import Github, enable_console_debug_logging, BadCredentialsException
+from github import Github, enable_console_debug_logging, BadCredentialsException, UnknownObjectException, GithubException
 from github.GithubObject import _NotSetType as NotSet
 from math import inf
 from rate_limit_retry import rate_limited_retry_search
@@ -248,24 +248,31 @@ if __name__ == "__main__":
                                 'estimated_size': repo.size,
                                 'created_at': repo.created_at.isoformat(),
                                 'updated_at': repo.updated_at.isoformat(),
+                                'clone_url': repo.clone_url,
                                 'skipped': False,
-                                'error': False,
+                                'error': None,
                             }
                         else:
                             repos[repo_name] = {
                                 'skipped': True,
-                                'error': False,
+                                'error': None,
                             }
-                    except BadCredentialsException:
+                    except (BadCredentialsException, UnknownObjectException) as e:
                         repos[repo_name] = {
-                                'skipped': True,
-                                'error': True,
-                            }
+                            'skipped': True,
+                            'error': e.status,
+                        }
+                    except GithubException as e:
+                        repos[repo_name] = {
+                            'skipped': True,
+                            'error': {'status': e.status, 'data': e.data},
+                        }
 
                 if not repos[repo_name]['skipped']:
                     repos[repo_name]['issues'].append({'number': row['number'], 'created_at': row['created_at'], 'state': row['state']})
     except Exception as e:
         print(f"Unexpected Exception! {e}")
+        print(type(e))
 
     output_filename = settings.get('results-repo-output-file')
     with open(output_filename, 'w', newline='', encoding='utf-8') as output_file:
