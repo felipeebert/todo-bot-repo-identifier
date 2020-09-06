@@ -8,16 +8,27 @@
     "ignore-archived-repos": false,
     "type": "issue",
     "state": "any",
-    "results-output-file": "output/issue-results.csv",
-    "results-repo-output-file": "output/repo-results.json",
-    "download-max-size-repo": -1,
-    "download-output-path-repo": "output/repos",
+    "results-issues-output-file": "output/issue-results.csv",
+    "results-repos-output-file": "output/repo-results.json",
+    "download-output-path-repo": "D:/Repos",
     "download-output-path-comments": "output/comments",
     "language": "any",
     "start-date": "2017-09-01",
     "end-date": "2021-01-01",
     "additional-issue-query": "",
-    "max-results": -1,
-    "log-pygithub-requests": true,
-    "log-pygithub-requests-shorten": true
+    "max-results": 5,
+    "loglevels": {
+        "general": "DEBUG",
+        "issue_finder": "DEBUG",
+        "repo_finder": "DEBUG",
+        "repo_cloner": "DEBUG"
+    },
+    "logoutputs": {
+        "general": null,
+        "issue_finder": null,
+        "repo_finder": null,
+        "repo_cloner": null
+    },
+    "log-pygithub-requests": false,
+    "shorten-pygithub-requests": true
 }

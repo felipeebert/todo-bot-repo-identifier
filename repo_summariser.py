@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     print("====================\n")
 
-    input_filename = settings.get('results-repo-output-file')
+    input_filename = settings.get('results-repos-output-file')
     with open(input_filename, newline='', encoding='utf-8') as input_file:
         repos = json.load(input_file)
 
