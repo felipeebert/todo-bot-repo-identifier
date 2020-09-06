@@ -70,7 +70,8 @@ def find_issues(github, settings, logger):
 
     search_start_time = datetime.now()
     logger.info(f"====================")
-    logger.info(f"Search was started at {search_start_time}! \nNB: This might take a while, so grab a drink and relax!\n")
+    logger.info(f"Search was started at {search_start_time}!")
+    logger.info(f"NB: This might take a while, so grab a drink and relax!\n")
 
     output_filename = settings.get('results-issues-output-file')
     with open(output_filename, 'w', newline='', encoding='utf-8') as output_file:

@@ -6,6 +6,7 @@ from github import Github, enable_console_debug_logging
 import util
 from bot_issue_finder import find_issues
 from repo_finder import find_repos
+from repo_cloner import clone_repos
 
 
 if __name__ == "__main__":
@@ -78,3 +79,10 @@ if __name__ == "__main__":
             msg = "An error occurred while fetching repositories!"
             if_logger.error(msg)
             raise ValueError(msg)
+
+    # Repo cloner logger
+    rc_logger = util.create_logger('repo_cloner', loglevels.get('repo_cloner'), logoutputs.get('repo_cloner'))
+    util.g_logger = rc_logger
+
+    # Clone repositories
+    clone_repos(settings, rc_logger)

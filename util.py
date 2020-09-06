@@ -103,15 +103,15 @@ def rate_limited_retry_search(github):
 
                     now = datetime.now(timezone.utc)
                     seconds = (reset_time - now).total_seconds()
-                    print(f"> GitHub Search and/or Core Rate limit exceeded")
-                    print(f"> Reset is in {seconds:.3g} seconds.")
+                    g_logger.debug(f"> GitHub Search and/or Core Rate limit exceeded")
+                    g_logger.debug(f"> Reset is in {seconds:.3g} seconds.")
                     if seconds < 0:
                         seconds = 1
 
                     if seconds > 0.0:
-                        print(f"> Waiting for {seconds:.3g} seconds...")
+                        g_logger.debug(f"> Waiting for {seconds:.3g} seconds...")
                         time.sleep(seconds)
-                        print("> Done waiting - resume!")
+                        g_logger.debug("> Done waiting - resume!")
             raise Exception("Failed too many times")
         return ret
     return decorator

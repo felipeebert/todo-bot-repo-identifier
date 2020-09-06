@@ -16,7 +16,7 @@
     "start-date": "2017-09-01",
     "end-date": "2021-01-01",
     "additional-issue-query": "",
-    "max-results": 5,
+    "max-results": -1,
     "loglevels": {
         "general": "DEBUG",
         "issue_finder": "DEBUG",
@@ -24,10 +24,10 @@
         "repo_cloner": "DEBUG"
     },
     "logoutputs": {
-        "general": null,
-        "issue_finder": null,
-        "repo_finder": null,
-        "repo_cloner": null
+        "general": "bot_finder.log",
+        "issue_finder": "bot_finder.log",
+        "repo_finder": "bot_finder.log",
+        "repo_cloner": "bot_cloner.log"
     },
     "log-pygithub-requests": false,
     "shorten-pygithub-requests": true
