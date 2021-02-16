@@ -4,6 +4,8 @@ The following files contain different kinds of information:
 - `issues_pre.csv`: Issues that would have been created by todo\[bot] for TODO-comments made in commits before the bot was actually introduced to a repository. Issues were identified using a local copy of todo\[bot] and passing commit diffs to it. Data does not contain duplicates.
 - `issues_post.csv`: Issues created by todo\[bot], including those for uncloned repositories. Data does not contain duplicates.
 
+Intermediate files are located in `/intermediate-files`. These were used to generate the aforementioned files.
+
 # Logs
 Logs are included in the `/logs` folder for the following tasks:
 - Cloning: Repositories were cloned to an external hard drive. This process crashed three times (twice because of too long filenames, which Windows cannot handle. Once because cloning took too long). Each of the following files describes one of four runs.
