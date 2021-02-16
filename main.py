@@ -8,6 +8,7 @@ from bot_issue_finder import find_issues
 from repo_finder import find_repos
 from repo_cloner import clone_repos
 import pre_bot_issue_finder
+import repo_analyser_v2
 
 if __name__ == "__main__":
     settings = util.load_settings('settings.json')
@@ -102,3 +103,40 @@ if __name__ == "__main__":
         pre_bot_issue_finder.obtain_pre_post_data(settings, logger)
         pre_bot_issue_finder.obtain_cloned_repos(settings, logger)
 
+
+    # Use the standard logger for all other tasks
+    util.g_logger = logger
+
+    # The following figure generation steps are not in a particular order.
+    if False:
+        repo_analyser_v2.find_usage_numbers(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_stars_forks_watchers_hist(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_stars_forks_watchers_scatter(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_commits(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_issues(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_issues_by_date(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_repo_creation_updated(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_pre_todo(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_pre_post_todo(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_pre_post_conclusion(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_commits_pre(settings, logger)
