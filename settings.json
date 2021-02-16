@@ -10,8 +10,14 @@
     "state": "any",
     "results-issues-output-file": "output/issue-results.csv",
     "results-repos-output-file": "output/repo-results.json",
+    "results-todo-comments-pre-bot-output-file": "output/issues-pre-bot.csv",
     "download-output-path-repo": "D:/Repos",
-    "download-output-path-comments": "output/comments",
+    "skip-cloning": false,
+    "results-clone-info-output-file": "output/clone_info.csv",
+    "results-merged-output-file": "output/total_repo_information.csv",
+    "fake-testcase-path": "D:/todo-bot/cloned-data/tests",
+    "diffs-output-path": "D:/todo-bot/cloned-data/diffs",
+    "modified-todo-bot-install-path": "D:/todo-bot/bin/todo",
     "language": "any",
     "start-date": "2017-09-01",
     "end-date": "2021-01-01",
@@ -21,13 +27,15 @@
         "general": "DEBUG",
         "issue_finder": "DEBUG",
         "repo_finder": "DEBUG",
-        "repo_cloner": "DEBUG"
+        "repo_cloner": "DEBUG",
+        "pre_issue_finder": "DEBUG"
     },
     "logoutputs": {
-        "general": "bot_finder.log",
+        "general": null,
         "issue_finder": "bot_finder.log",
         "repo_finder": "bot_finder.log",
-        "repo_cloner": "bot_cloner.log"
+        "repo_cloner": "bot_cloner.log",
+        "pre_issue_finder": "pre_bot_finder.log"
     },
     "log-pygithub-requests": false,
     "shorten-pygithub-requests": true

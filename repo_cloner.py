@@ -7,6 +7,9 @@ from pygit2.errors import GitError
 
 
 def clone_repos(settings, logger):
+    """
+        Clones repositories from repos in which todo[bot] has created at least one issue.
+    """
     output_path = settings.get('download-output-path-repo')
 
     input_filename = settings.get('results-repos-output-file')
@@ -15,8 +18,11 @@ def clone_repos(settings, logger):
 
     repo_start_time = datetime.now()
     logger.info(f"Repo cloning started at {repo_start_time}! Attempting to clone {len(repos)} repos.\nThis is the last step and will take the longest!\n")
-    
+
     skip_until = None # Insert name of the last successfully cloned repo here
+    skip_until = "baskeboler/cljs-karaoke-client"
+    skip_until = "holisticware-xamarin/HolisticWare.DotNetNew.XamarinProjectsStructureTemplate"
+    skip_until = "timvideos/linux-litex"
     has_seen_skip = (skip_until is None)
 
     # Sort the repo names (to ensure items are iterated the same way every time)
@@ -26,6 +32,7 @@ def clone_repos(settings, logger):
         if not repo.get('skipped'):
             sorted_repos.append((name, repo.get('clone_url')))
         else:
+            # Do not clone repositories for which we failed to fetch information earlier in the process
             logger.debug(f"Skipping {name} because of earlier error: {repo.get('error')}")
     sorted_repos.sort(key=lambda t: t[0])
     num_repos = len(sorted_repos)

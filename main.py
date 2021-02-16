@@ -7,7 +7,8 @@ import util
 from bot_issue_finder import find_issues
 from repo_finder import find_repos
 from repo_cloner import clone_repos
-
+import pre_bot_issue_finder
+import repo_analyser_v2
 
 if __name__ == "__main__":
     settings = util.load_settings('settings.json')
@@ -21,7 +22,7 @@ if __name__ == "__main__":
 
     logger.info("======SETTINGS======")
     util.verify_settings(settings)
-    
+
     if settings.get('log-pygithub-requests'):
         util.load_gh_logger(settings.get('shorten-pygithub-requests'))
 
@@ -47,7 +48,7 @@ if __name__ == "__main__":
 
     # Initialize PyGithub
     github = Github(per_page=100, **login_settings)
-    
+
     logger.info("====================\n")
 
     # Issue finder logger
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     else:
         # Issues were not yet fetched
         find_issues(github, settings, if_logger)
-        
+
     # Repo finder logger
     rf_logger = util.create_logger('repo_finder', loglevels.get('repo_finder'), logoutputs.get('repo_finder'))
     util.g_logger = rf_logger
@@ -80,9 +81,62 @@ if __name__ == "__main__":
             if_logger.error(msg)
             raise ValueError(msg)
 
+
     # Repo cloner logger
     rc_logger = util.create_logger('repo_cloner', loglevels.get('repo_cloner'), logoutputs.get('repo_cloner'))
     util.g_logger = rc_logger
 
-    # Clone repositories
-    clone_repos(settings, rc_logger)
+    if not settings.get('skip-cloning'):
+        # Clone repositories
+        clone_repos(settings, rc_logger)
+
+
+    # Pre-bot issue logger
+    pef_logger = util.create_logger('pre_issue_finder', loglevels.get('pre_issue_finder'), logoutputs.get('pre_issue_finder'))
+    util.g_logger = pef_logger
+
+    if True:
+        pre_bot_issue_finder.find_pre_bot_issues(settings, pef_logger)
+        pre_bot_issue_finder.remove_pre_duplicates(settings, logger)
+
+    if True:
+        pre_bot_issue_finder.obtain_pre_post_data(settings, logger)
+        pre_bot_issue_finder.obtain_cloned_repos(settings, logger)
+
+
+    # Use the standard logger for all other tasks
+    util.g_logger = logger
+
+    # The following figure generation steps are not in a particular order.
+    if False:
+        repo_analyser_v2.find_usage_numbers(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_stars_forks_watchers_hist(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_stars_forks_watchers_scatter(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_commits(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_issues(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_issues_by_date(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_repo_creation_updated(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_pre_todo(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_pre_post_todo(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_pre_post_conclusion(settings, logger)
+
+    if False:
+        repo_analyser_v2.plot_commits_pre(settings, logger)

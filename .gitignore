@@ -132,3 +132,6 @@ dmypy.json
 
 # Outputs
 /output
+
+# Include log files in the results folder
+!results/**/*.log

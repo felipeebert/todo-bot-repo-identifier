@@ -27,19 +27,31 @@ The `settings.json` contains the following information:
 - `ignore-archieved-repos`: Whether archived repositories should not be cloned.
 - `type`: Either `issue`, `pr`, or `any`. Can be used to limit the fetching to only issues/PRs.
 - `state`: Either `open`, `closed`, or `any`. Can be used to limit the fetching to only open/closed issues/PRs.
-- `results-issues-output-file`: The folder in which the identified issues/PRs should be placed. Output is in CSV file format.
-- `results-repos-output-file`: The folder in which the identified repositories should be placed. Output is in JSON file format.
+- `results-issues-output-file`: The file in which the identified issues/PRs should be placed. Output is in CSV file format.
+- `results-repos-output-file`: The file in which the identified repositories should be placed. Output is in JSON file format.
+- `results-todo-comments-pre-bot-output-file`: The file containing issues that would have been created for TODO-comments made before todo\[bot] was introduced to a repository. Output is in CSV file format.
 - `download-output-path-repo`: The location in which cloned repositories should be placed.
-- `download-output-path-comments`: Unused.
+- `skip-cloning`: Whether the cloning step should be skipped.
+- `results-clone-info-output-file`: File containing some information of the cloned repositories.
+- `results-merged-output-file`: File containing information on the identified repositories. **This is the final output.**
+- `fake-testcase-path`: Folder in which generated 'testcases' will be placed. These 'testcases' are not actually used, but (given enough processing time) could signify which issues would be created for a certain diff.
+- `diffs-output-path`: Output folder for diffs of commits of repositories in which at least one TODO-issue was created.
+- `modified-todo-bot-install-path`: Location in which the modified todo\[bot] is installed. This is needed to identify issues for TODO-comments made before the bot was introduced to a repository.
 - `language`: Filters the issue/PR search to repositories that use this language. Use `any` for any language.
 - `start-date`: The date from which we start identifying issues/PRs. Providing a tighter timeframe makes the code run faster.
 - `end-date`: The date at which we stop identifying issues/PRs.
 - `additional-issue-query`: Additional query using GitHub's search syntax to limit the issue/PRs search even further. E.g. `assignee:EricTRL`
-- `max-results`: The maximum number of issues/PRs to identify. 
+- `max-results`: The maximum number of issues/PRs to identify.
 - `loglevels`: Dictionary containing the loglevels for each of the three phases (issue identifying, repository identifying, repository cloning).
 - `logoutputs`: File path to where the logs should be stored for each of the three phases. Can be `null` to output to the terminal.
 - `log-pygithub-requests`: If `true`, outputs the requests that PyGithub makes to the GitHub API. Can be useful for debugging.
 - `shorten-pytightub-requests`: If `true`, reduces the amount of information that is logged for PyGithubs API requests, limiting it to just the accessed API endpoint.
+
+# Modified copy of todo\[bot]
+In case you wish to reproduce the results, extract the included zip to a folder of choice and set `modified-todo-bot-install-path` to that same location.
+
+NB: If changing the `diffs-output-path` setting or `results-todo-comments-pre-bot-output-file` setting, then also change Line 15 in `bin/todo.js` and Line 21 in `lib/utils/get_diff.js` of the modified todo\[bot]-code respectively, as these do not pull these values from the settings.
+
 
 # Login Settings
 The GitHub API provides a larger rate limit for authenticated requests. See `/login-examples` for examples to authenticate. This login data is passed to PyGithub.
