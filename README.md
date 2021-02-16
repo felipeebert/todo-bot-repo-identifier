@@ -29,13 +29,12 @@ The `settings.json` contains the following information:
 - `state`: Either `open`, `closed`, or `any`. Can be used to limit the fetching to only open/closed issues/PRs.
 - `results-issues-output-file`: The folder in which the identified issues/PRs should be placed. Output is in CSV file format.
 - `results-repos-output-file`: The folder in which the identified repositories should be placed. Output is in JSON file format.
-- `download-output-path-repo`: The location in which cloned repositories should be placed.
-- `download-output-path-comments`: Unused.
+- `download-output-path-repo`: The location in which cloned repositories should be placed, or `null` if cloning should not be performed.
 - `language`: Filters the issue/PR search to repositories that use this language. Use `any` for any language.
 - `start-date`: The date from which we start identifying issues/PRs. Providing a tighter timeframe makes the code run faster.
 - `end-date`: The date at which we stop identifying issues/PRs.
 - `additional-issue-query`: Additional query using GitHub's search syntax to limit the issue/PRs search even further. E.g. `assignee:EricTRL`
-- `max-results`: The maximum number of issues/PRs to identify. 
+- `max-results`: The maximum number of issues/PRs to identify.
 - `loglevels`: Dictionary containing the loglevels for each of the three phases (issue identifying, repository identifying, repository cloning).
 - `logoutputs`: File path to where the logs should be stored for each of the three phases. Can be `null` to output to the terminal.
 - `log-pygithub-requests`: If `true`, outputs the requests that PyGithub makes to the GitHub API. Can be useful for debugging.

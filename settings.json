@@ -11,7 +11,6 @@
     "results-issues-output-file": "output/issue-results.csv",
     "results-repos-output-file": "output/repo-results.json",
     "download-output-path-repo": "D:/Repos",
-    "download-output-path-comments": "output/comments",
     "language": "any",
     "start-date": "2017-09-01",
     "end-date": "2021-01-01",
@@ -21,13 +20,15 @@
         "general": "DEBUG",
         "issue_finder": "DEBUG",
         "repo_finder": "DEBUG",
-        "repo_cloner": "DEBUG"
+        "repo_cloner": "DEBUG",
+        "pre_issue_finder": "DEBUG"
     },
     "logoutputs": {
-        "general": "bot_finder.log",
+        "general": null,
         "issue_finder": "bot_finder.log",
         "repo_finder": "bot_finder.log",
-        "repo_cloner": "bot_cloner.log"
+        "repo_cloner": "bot_cloner.log",
+        "pre_issue_finder": "pre_bot_finder.log"
     },
     "log-pygithub-requests": false,
     "shorten-pygithub-requests": true
