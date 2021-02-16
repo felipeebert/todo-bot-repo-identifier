@@ -27,9 +27,16 @@ The `settings.json` contains the following information:
 - `ignore-archieved-repos`: Whether archived repositories should not be cloned.
 - `type`: Either `issue`, `pr`, or `any`. Can be used to limit the fetching to only issues/PRs.
 - `state`: Either `open`, `closed`, or `any`. Can be used to limit the fetching to only open/closed issues/PRs.
-- `results-issues-output-file`: The folder in which the identified issues/PRs should be placed. Output is in CSV file format.
-- `results-repos-output-file`: The folder in which the identified repositories should be placed. Output is in JSON file format.
-- `download-output-path-repo`: The location in which cloned repositories should be placed, or `null` if cloning should not be performed.
+- `results-issues-output-file`: The file in which the identified issues/PRs should be placed. Output is in CSV file format.
+- `results-repos-output-file`: The file in which the identified repositories should be placed. Output is in JSON file format.
+- `results-todo-comments-pre-bot-output-file`: The file containing issues that would have been created for TODO-comments made before todo\[bot] was introduced to a repository. Output is in CSV file format.
+- `download-output-path-repo`: The location in which cloned repositories should be placed.
+- `skip-cloning`: Whether the cloning step should be skipped.
+- `results-clone-info-output-file`: File containing some information of the cloned repositories.
+- `results-merged-output-file`: File containing information on the identified repositories. **This is the final output.**
+- `fake-testcase-path`: Folder in which generated 'testcases' will be placed. These 'testcases' are not actually used, but (given enough processing time) could signify which issues would be created for a certain diff.
+- `diffs-output-path`: Output folder for diffs of commits of repositories in which at least one TODO-issue was created.
+- `modified-todo-bot-install-path`: Location in which the modified todo\[bot] is installed. This is needed to identify issues for TODO-comments made before the bot was introduced to a repository.
 - `language`: Filters the issue/PR search to repositories that use this language. Use `any` for any language.
 - `start-date`: The date from which we start identifying issues/PRs. Providing a tighter timeframe makes the code run faster.
 - `end-date`: The date at which we stop identifying issues/PRs.
