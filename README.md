@@ -47,5 +47,11 @@ The `settings.json` contains the following information:
 - `log-pygithub-requests`: If `true`, outputs the requests that PyGithub makes to the GitHub API. Can be useful for debugging.
 - `shorten-pytightub-requests`: If `true`, reduces the amount of information that is logged for PyGithubs API requests, limiting it to just the accessed API endpoint.
 
+# Modified copy of todo\[bot]
+In case you wish to reproduce the results, extract the included zip to a folder of choice and set `modified-todo-bot-install-path` to that same location.
+
+NB: If changing the `diffs-output-path` setting or `results-todo-comments-pre-bot-output-file` setting, then also change Line 15 in `bin/todo.js` and Line 21 in `lib/utils/get_diff.js` of the modified todo\[bot]-code respectively, as these do not pull these values from the settings.
+
+
 # Login Settings
 The GitHub API provides a larger rate limit for authenticated requests. See `/login-examples` for examples to authenticate. This login data is passed to PyGithub.
